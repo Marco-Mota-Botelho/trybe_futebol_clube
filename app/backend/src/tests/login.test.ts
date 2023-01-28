@@ -18,7 +18,7 @@ const mockUser = {
 }
 
 describe('Login', () => {
-  beforeEach(async () => {
+  beforeEach( () => {
     sinon
       .stub(Users, "findOne")
       .resolves({
