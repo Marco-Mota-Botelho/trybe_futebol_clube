@@ -46,9 +46,15 @@ const mockMatches = [
 
 describe('Matches', () => {
   beforeEach(() => {
-    sinon
-      .stub(Match, "findAll")
-      .resolves(mockMatches as unknown as Match[])
+    const stub = sinon.stub(Match, "findAll")
+      
+    stub.withArgs(sinon.match.hasNested('where.inProgress', true))
+    .resolves([mockMatches[1]] as unknown as Match[]);
+
+    stub.withArgs(sinon.match.hasNested('where.inProgress', false))
+    .resolves([mockMatches[0]] as unknown as Match[]);
+
+    stub.resolves(mockMatches as unknown as Match[]);
   });
   
   afterEach(() => {
@@ -60,6 +66,20 @@ describe('Matches', () => {
 
     expect(chaiHttpResponse).to.have.status(200);
     expect(chaiHttpResponse.body).to.be.deep.equal(mockMatches);
+  });
+
+  it('should show matches in progress', async () => {
+    let chaiHttpResponse = await chai.request(app).get('/matches?inProgress=true');
+
+    expect(chaiHttpResponse).to.have.status(200);
+    expect(chaiHttpResponse.body).to.be.deep.equal([mockMatches[1]]);
+  })
+
+  it('should show matches not in progress', async () => {
+    let chaiHttpResponse = await chai.request(app).get('/matches?inProgress=false');
+
+    expect(chaiHttpResponse).to.have.status(200);
+    expect(chaiHttpResponse.body).to.be.deep.equal([mockMatches[0]]);
   })
 
 })
