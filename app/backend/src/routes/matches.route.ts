@@ -6,5 +6,6 @@ const matchController = new MatchController();
 
 // router.get('/:id', teamController.getTeamById);
 router.get('/', matchController.getAll);
+router.post('/', matchController.createMatch);
 
 export default router;

@@ -1,3 +1,4 @@
+import MatchInterface from '../interfaces/match.interface';
 import Match from '../database/models/Match';
 
 const HTTP_STATUS_OK = 200;
@@ -20,5 +21,11 @@ export default class MatchService {
         { association: 'awayTeam', attributes: ['teamName'] }] });
 
     return { status: HTTP_STATUS_OK, matches };
+  }
+
+  public async addMatch(match: MatchInterface) {
+    const newMatch = await this.matchModel.create({ ...match, inProgress: true });
+
+    return newMatch;
   }
 }
