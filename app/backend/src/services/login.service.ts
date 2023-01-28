@@ -32,4 +32,10 @@ export default class LoginService {
       token,
     };
   };
+
+  public getRole = async (email: string) => {
+    const user = await this.userModel.findOne({ where: { email } });
+
+    return { role: user?.role };
+  };
 }

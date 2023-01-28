@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
+import verifyToken from '../auth/verifyToken';
 import LoginService from '../services/login.service';
-// oi
+
+const HTTP_STATUS_OK = 200;
 
 export default class LoginController {
   constructor(private loginService: LoginService = new LoginService()) {}
@@ -25,14 +27,25 @@ export default class LoginController {
     }
   };
 
-  public fetchRole = async (
+  public fetchUserData = async (
     req: Request,
     res: Response,
   ) => {
-    const { authorization } = req.body;
+    const authorization = req.header('authorization');
 
     if (!authorization) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      const userDataPayload = verifyToken(authorization);
+
+      const userRole = await this.loginService.getRole(userDataPayload.data);
+
+      return res.status(HTTP_STATUS_OK).json(userRole);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Internal server error' });
     }
   };
 }
