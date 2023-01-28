@@ -35,7 +35,7 @@ export default class LoginService {
 
   public getRole = async (email: string) => {
     const user = await this.userModel.findOne({ where: { email } });
-
-    return { role: user?.role };
+    // Impossible to be null because we always authenticate the user before calling this method
+    return { role: user!.role };
   };
 }
