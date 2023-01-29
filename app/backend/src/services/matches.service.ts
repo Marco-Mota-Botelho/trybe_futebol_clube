@@ -28,4 +28,18 @@ export default class MatchService {
 
     return newMatch;
   }
+
+  public async finishMatch(id: number) {
+    const matchToFinish = await this.matchModel.findOne({ where: { id } });
+
+    if (matchToFinish) {
+      matchToFinish.inProgress = false;
+
+      await matchToFinish?.save();
+
+      return { status: 200 };
+    }
+
+    return { status: 400 };
+  }
 }

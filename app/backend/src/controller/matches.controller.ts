@@ -42,4 +42,18 @@ export default class MatchController {
       return res.status(500).json({ message: 'unexpected error' });
     }
   };
+
+  public finishMatch = async (
+    req: Request,
+    res: Response,
+  ) => {
+    try {
+      const { id } = req.params;
+      const match = await this.matchService.finishMatch(parseInt(id, 10));
+
+      return res.status(match.status).json({ message: 'Finished' });
+    } catch (error) {
+      return res.status(500).json({ message: 'Unexpected Error' });
+    }
+  };
 }
