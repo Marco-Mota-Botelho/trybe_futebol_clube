@@ -42,4 +42,22 @@ export default class MatchService {
 
     return { status: 400 };
   }
+
+  public async updateMatch(
+    id: number,
+    scores: { homeTeamGoals: number, awayTeamGoals: number },
+  ) {
+    const matchToUpdate = await this.matchModel.findOne({ where: { id } });
+
+    if (!matchToUpdate) return { status: 404, message: 'match not found' };
+
+    matchToUpdate.set({
+      homeTeamGoals: scores.homeTeamGoals,
+      awayTeamGoals: scores.awayTeamGoals,
+    });
+
+    matchToUpdate.save();
+
+    return { status: 200, message: 'Updated' };
+  }
 }
