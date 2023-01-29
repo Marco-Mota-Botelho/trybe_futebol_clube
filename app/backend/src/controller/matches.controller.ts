@@ -17,7 +17,6 @@ export default class MatchController {
 
       return res.status(matchesData.status).json(matchesData.matches);
     } catch (error) {
-      console.log(error);
       return res.status(500).json({ message: 'unexpected error' });
     }
   };
@@ -29,10 +28,7 @@ export default class MatchController {
     try {
       const match = req.body;
       const authorization = req.header('authorization');
-      if (!authorization) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-      const user = verifyToken(authorization);
+      const user = verifyToken(authorization!);
       console.log({ user });
       if (user) {
         const newMatch = await this.matchService.addMatch(match);

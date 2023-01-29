@@ -18,7 +18,7 @@ export function validateTeams(
   next();
 }
 
-export async function validateTeam(
+export async function validateTeamsId(
   req: Request,
   res: Response,
   next: NextFunction,
