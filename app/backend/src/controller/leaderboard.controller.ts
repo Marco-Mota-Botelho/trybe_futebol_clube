@@ -81,8 +81,6 @@ export default class LeaderboardController {
 
   private calculateGoals = async (teamId: number) => {
     const teamMatches = await this.getTeamMatches(teamId);
-
-    console.log({ ...teamMatches });
     const gamesAway = teamMatches.filter((match) => match.awayTeamId === teamId);
     const gamesHome = teamMatches.filter((match) => match.homeTeamId === teamId);
     let goalsFavor = 0.0;
@@ -91,6 +89,20 @@ export default class LeaderboardController {
       goalsFavor += game.awayTeamGoals;
       goalsOwn += game.homeTeamGoals;
     });
+
+    gamesHome.forEach((game) => {
+      goalsFavor += game.homeTeamGoals;
+      goalsOwn += game.awayTeamGoals;
+    });
+
+    return { goalsFavor, goalsOwn, goalsBalance: goalsFavor - goalsOwn };
+  };
+
+  private calculateGoalsHome = async (teamId: number) => {
+    const teamMatches = await this.getTeamMatches(teamId);
+    const gamesHome = teamMatches.filter((match) => match.homeTeamId === teamId);
+    let goalsFavor = 0.0;
+    let goalsOwn = 0;
 
     gamesHome.forEach((game) => {
       goalsFavor += game.homeTeamGoals;
@@ -122,6 +134,28 @@ export default class LeaderboardController {
     };
   };
 
+  private generateTeamDataHome = async (teamId:number) => {
+    const { team } = await this.teamService.getById(teamId);
+    const matches = await this.getTeamMatches(teamId);
+    const homeMatches = matches.filter((match) => match.homeTeamId === teamId);
+    const stats = await this.calculateHomePoints(homeMatches);
+    const { goalsBalance, goalsFavor, goalsOwn } = await this.calculateGoalsHome(teamId);
+    const totalGames = homeMatches.length;
+    const efficiency = (100 * stats.pointsHome) / (totalGames * 3);
+
+    return { name: team?.teamName,
+      totalPoints: stats.pointsHome,
+      totalGames,
+      totalVictories: stats.totalVictories,
+      totalDraws: stats.totalDraws,
+      totalLosses: stats.totalLosses,
+      goalsFavor,
+      goalsOwn,
+      goalsBalance,
+      efficiency,
+    };
+  };
+
   public getLeaderboards = async (
     _req: Request,
     res: Response,
@@ -136,13 +170,35 @@ export default class LeaderboardController {
     }
   };
 
+  public getLeaderboardsHome = async (
+    _req: Request,
+    res: Response,
+  ) => {
+    try {
+      const { teams } = await this.teamService.getAll();
+      const leaderBoard = await Promise.all(
+        teams.map((team) => this.generateTeamDataHome(team.id)),
+      );
+      leaderBoard.sort((teamA, teamB) => (teamB.totalPoints - teamA.totalPoints
+        || teamB.totalVictories - teamA.totalVictories
+        || teamB.goalsBalance - teamA.goalsBalance
+        || teamB.goalsFavor - teamA.goalsFavor
+        || teamA.goalsOwn - teamB.goalsOwn));
+
+      console.log({ leaderBoard });
+
+      return res.status(200).json(leaderBoard);
+    } catch (error) {
+      return res.status(500).json({ message: 'Unexpected Error' });
+    }
+  };
+
   private getTeamMatches = async (teamId: number) => {
     const response = await this.getAllMatches();
 
     const teamMatches = response.matches.filter((match) =>
       (match.homeTeamId === teamId || match.awayTeamId === teamId));
 
-    console.log([...teamMatches]);
     return teamMatches;
   };
 }
