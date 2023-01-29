@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { validateTeams, validateTeam } from '../middlewares/matches.middlewares';
 import validateToken from '../auth/tokenValidation';
 import MatchController from '../controller/matches.controller';
 
@@ -7,7 +8,7 @@ const matchController = new MatchController();
 
 // router.get('/:id', teamController.getTeamById);
 router.get('/', matchController.getAll);
-router.post('/', validateToken, matchController.createMatch);
+router.post('/', validateToken, validateTeams, validateTeam, matchController.createMatch);
 router.patch('/:id/finish', validateToken, matchController.finishMatch);
 
 export default router;
